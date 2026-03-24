@@ -228,42 +228,6 @@ Simulated using **ModelSim / QuestaSim**. The waveforms below show the end-to-en
 
 ---
 
-## Performance & Resource Usage
-
-> Values below are estimates for a typical 7-series / Artix-7 FPGA. Run synthesis for exact figures.
-
-### Timing
-
-| Parameter | Value |
-|---|---|
-| Target clock | 100 MHz |
-| Pipeline latency | ~7 clock cycles (fill) + control overhead |
-| Throughput | 1 output frame per 8 input samples |
-| Samples per second | Up to 100 MS/s (clock-rate dependent) |
-
-### Resource Utilization (estimated, Artix-7 XC7A35T)
-
-| Resource | Used | Notes |
-|---|---|---|
-| LUTs | ~350–450 | Butterfly arithmetic + control logic |
-| FFs | ~200–280 | Shift registers + pipeline registers |
-| DSP48s | 0–6 | Depends on synthesis tool mapping of complex multiply |
-| BRAMs | 0 | ROMs small enough to fit in LUTs (distributed RAM) |
-| IOBs | ~52 | 12-bit × 2 in + 16-bit × 2 out + control |
-
-> Run `report_utilization` in Vivado or the equivalent in Quartus for accurate figures after synthesis.
-
-### Compared to 32-pt parent design
-
-| Metric | 32-pt | 8-pt | Reduction |
-|---|---|---|---|
-| Pipeline stages | 5 | 3 | −40% |
-| Shift-register depth | 16+8+4+2+1=31 | 4+2+1=7 | −77% |
-| Twiddle ROM entries | 16+8+4+2 = 30 | 4+2 = 6 | −80% |
-| Output bins | 32 | 8 | −75% |
-| LUT estimate | ~900 | ~400 | ~−55% |
-
----
 
 ## Getting Started
 
@@ -272,53 +236,7 @@ Simulated using **ModelSim / QuestaSim**. The waveforms below show the end-to-en
 - ModelSim / QuestaSim (any recent version)
 - All source files listed under [File Structure](#file-structure)
 
-### Compile & simulate
 
-```tcl
-# Start ModelSim, then in the transcript:
-
-# 1. Create a working library
-vlib work
-vmap work work
-
-# 2. Compile all source files (order matters for `include resolution)
-vlog -sv radix2.v
-vlog -sv ROM_2.v ROM_4.v
-vlog -sv shift_1.v shift_2.v shift_4.v
-vlog -sv FFT_8pt.v
-vlog -sv tb_FFT_8pt.v   # your testbench
-
-# 3. Start simulation
-vsim -t 1ns work.tb_FFT_8pt
-
-# 4. Add waves and run
-add wave -r /*
-run -all
-```
-
-### Testbench stimulus example
-
-```verilog
-// Apply 8 complex samples, then check dout against reference
-initial begin
-    reset = 1; in_valid = 0;
-    #20 reset = 0;
-
-    // Feed x[0..7]
-    repeat (8) begin
-        @(posedge clk);
-        in_valid = 1;
-        din_r = $signed(sample_r[sample_idx]);
-        din_i = $signed(sample_i[sample_idx]);
-        sample_idx = sample_idx + 1;
-    end
-    @(posedge clk); in_valid = 0;
-
-    // Wait for out_valid then check bins
-    @(posedge out_valid);
-    // ... compare dout_r / dout_i against reference
-end
-```
 
 ---
 
@@ -334,12 +252,5 @@ end
 │   ├── shift_1.v          # 1-sample complex delay line
 │   ├── shift_2.v          # 2-sample complex delay line
 │   └── shift_4.v          # 4-sample complex delay line
-│
-├── sim/
-│   ├── tb_FFT_8pt.v       # ModelSim testbench
-│   ├── waveform_full.png  # ← add your simulation screenshots here
-│   ├── waveform_output.png
-│   └── fft_spectrum.png
-│
-└── README.md
+
 ```
