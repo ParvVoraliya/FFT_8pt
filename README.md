@@ -343,15 +343,3 @@ end
 │
 └── README.md
 ```
-
----
-
-## Author
-
-**Ahmed Abdelazeem**
-- GitHub: [@abdelazeem201](https://github.com/abdelazeem201)
-- Email: ahmed_abdelazeem@outlook.com
-
----
-
-*Derived from a 32-pt pipelined FFT architecture. The 8-pt variant retains stages 3–5 of the original pipeline (shift_4 → shift_2 → shift_1) and reuses the ROM_4 / ROM_2 twiddle tables without modification.*
